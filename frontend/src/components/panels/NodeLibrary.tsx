@@ -1,37 +1,30 @@
-import React, { useState } from 'react';
-
-const NODE_CATEGORIES = [
-    {
-        title: 'Data Processing',
-        nodes: [
-            { id: 'input', label: 'Input', color: 'bg-blue-500' },
-            { id: 'dataloader', label: 'DataLoader', color: 'bg-blue-500' },
-        ],
-    },
-    {
-        title: 'Model Architecture',
-        nodes: [
-            { id: 'conv2d', label: 'Conv2d', color: 'bg-blue-600' },
-            { id: 'linear', label: 'Linear', color: 'bg-blue-600' },
-            { id: 'relu', label: 'ReLU', color: 'bg-green-500' },
-        ],
-    },
-] as const;
+import React, { useState, useMemo } from 'react';
+import { nodeRegistry } from '../../registry/NodeRegistry';
 
 export const NodeLibrary: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
-    const onDragStart = (event: React.DragEvent, nodeType: string) => {
-        event.dataTransfer.setData('application/reactflow', nodeType);
+    const onDragStart = (event: React.DragEvent, nodeId: string) => {
+        event.dataTransfer.setData('application/reactflow', nodeId);
         event.dataTransfer.effectAllowed = 'move';
     };
 
-    const filteredCategories = NODE_CATEGORIES.map(category => ({
-        ...category,
-        nodes: category.nodes.filter(node =>
-            node.label.toLowerCase().includes(searchQuery.toLowerCase())
-        ),
-    })).filter(category => category.nodes.length > 0);
+    const categories = useMemo(() => {
+        const cats = nodeRegistry.getCategories();
+        return cats.map(category => ({
+            title: category,
+            nodes: nodeRegistry.getNodesByCategory(category),
+        }));
+    }, []);
+
+    const filteredCategories = useMemo(() => {
+        return categories.map(category => ({
+            ...category,
+            nodes: category.nodes.filter(node =>
+                node.label.toLowerCase().includes(searchQuery.toLowerCase())
+            ),
+        })).filter(category => category.nodes.length > 0);
+    }, [categories, searchQuery]);
 
     return (
         <div className="w-[280px] border-r border-border flex flex-col bg-card">
@@ -58,8 +51,12 @@ export const NodeLibrary: React.FC = () => {
                                     draggable
                                     onDragStart={(e) => onDragStart(e, node.id)}
                                     className="p-3 bg-secondary rounded-md cursor-move hover:bg-secondary/80 transition flex items-center gap-2"
+                                    title={node.description}
                                 >
-                                    <div className={`w-3 h-3 rounded-sm ${node.color}`} />
+                                    <div
+                                        className="w-3 h-3 rounded-sm"
+                                        style={{ backgroundColor: node.color }}
+                                    />
                                     <span className="text-sm text-foreground">{node.label}</span>
                                 </div>
                             ))}

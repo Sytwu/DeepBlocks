@@ -8,8 +8,15 @@ import ReactFlow, {
     addEdge,
     Connection,
     BackgroundVariant,
+    NodeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { CustomNode } from '../nodes/CustomNode';
+import { nodeRegistry } from '../../registry/NodeRegistry';
+
+const nodeTypes: NodeTypes = {
+    custom: CustomNode,
+};
 
 let id = 0;
 const getId = () => `node_${id++}`;
@@ -33,23 +40,34 @@ export const FlowCanvas: React.FC = () => {
         (event: React.DragEvent) => {
             event.preventDefault();
 
-            const type = event.dataTransfer.getData('application/reactflow');
+            const nodeId = event.dataTransfer.getData('application/reactflow');
+            if (!nodeId) return;
 
-            if (typeof type === 'undefined' || !type) {
-                return;
-            }
+            const nodeDef = nodeRegistry.getNode(nodeId);
+            if (!nodeDef) return;
 
             const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
             const position = {
-                x: event.clientX - (reactFlowBounds?.left || 0),
-                y: event.clientY - (reactFlowBounds?.top || 0),
+                x: event.clientX - (reactFlowBounds?.left || 0) - 80,
+                y: event.clientY - (reactFlowBounds?.top || 0) - 40,
             };
+
+            // Create default params from node definition
+            const params: Record<string, any> = {};
+            nodeDef.params.forEach(param => {
+                params[param.name] = param.default;
+            });
 
             const newNode = {
                 id: getId(),
-                type: 'default',
+                type: 'custom',
                 position,
-                data: { label: `${type} node` },
+                data: {
+                    type: nodeDef.id,
+                    label: nodeDef.label,
+                    params,
+                    color: nodeDef.color,
+                },
             };
 
             setNodes((nds) => nds.concat(newNode));
@@ -67,6 +85,7 @@ export const FlowCanvas: React.FC = () => {
                 onConnect={onConnect}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
+                nodeTypes={nodeTypes}
                 fitView
                 className="bg-background"
             >
@@ -74,8 +93,8 @@ export const FlowCanvas: React.FC = () => {
                 <Controls className="bg-card border border-border text-foreground" />
                 <MiniMap
                     className="bg-card border border-border"
-                    nodeColor="#3b82f6"
-                    maskColor="rgba(0, 0, 0, 0.3)"
+                    nodeColor={(node) => node.data.color || '#3b82f6'}
+                    maskColor="rgba(0, 0, 0, 0.1)"
                 />
             </ReactFlow>
 
