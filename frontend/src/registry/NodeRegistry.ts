@@ -1,5 +1,12 @@
 import { NodeDefinition } from '../types/nodes';
-import { InputNode, Conv2dNode } from './nodes';
+import {
+    InputNode,
+    Conv2dNode,
+    LinearNode,
+    ReLUNode,
+    BatchNorm2dNode,
+    MaxPool2dNode
+} from './nodes';
 
 class NodeRegistry {
     private nodes: Map<string, NodeDefinition> = new Map();
@@ -7,6 +14,10 @@ class NodeRegistry {
     constructor() {
         this.registerNode(InputNode);
         this.registerNode(Conv2dNode);
+        this.registerNode(LinearNode);
+        this.registerNode(ReLUNode);
+        this.registerNode(BatchNorm2dNode);
+        this.registerNode(MaxPool2dNode);
     }
 
     registerNode(node: NodeDefinition) {

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import ReactFlow, {
     Background,
     Controls,
@@ -9,10 +9,12 @@ import ReactFlow, {
     Connection,
     BackgroundVariant,
     NodeTypes,
+    OnSelectionChangeParams,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { CustomNode } from '../nodes/CustomNode';
 import { nodeRegistry } from '../../registry/NodeRegistry';
+import { useFlowStore } from '../../store/flowStore';
 
 const nodeTypes: NodeTypes = {
     custom: CustomNode,
@@ -25,6 +27,14 @@ export const FlowCanvas: React.FC = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+    const setSelectedNodeId = useFlowStore((state) => state.setSelectedNodeId);
+    const setStoreNodes = useFlowStore((state) => state.setNodes);
+
+    // Sync nodes to store
+    useEffect(() => {
+        setStoreNodes(nodes);
+    }, [nodes, setStoreNodes]);
 
     const onConnect = useCallback(
         (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -75,6 +85,36 @@ export const FlowCanvas: React.FC = () => {
         [setNodes]
     );
 
+    const onSelectionChange = useCallback(
+        ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
+            if (selectedNodes.length === 1) {
+                setSelectedNodeId(selectedNodes[0].id);
+            } else {
+                setSelectedNodeId(null);
+            }
+        },
+        [setSelectedNodeId]
+    );
+
+    // Handle keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            // Delete selected nodes
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+                setNodes((nds) => nds.filter((node) => !node.selected));
+                setEdges((eds) => eds.filter((edge) => {
+                    const sourceNode = nodes.find((n) => n.id === edge.source);
+                    const targetNode = nodes.find((n) => n.id === edge.target);
+                    return sourceNode && !sourceNode.selected && targetNode && !targetNode.selected;
+                }));
+                setSelectedNodeId(null);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [setNodes, setEdges, nodes, setSelectedNodeId]);
+
     return (
         <div className="flex-1 relative bg-background" ref={reactFlowWrapper}>
             <ReactFlow
@@ -85,6 +125,7 @@ export const FlowCanvas: React.FC = () => {
                 onConnect={onConnect}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
+                onSelectionChange={onSelectionChange}
                 nodeTypes={nodeTypes}
                 fitView
                 className="bg-background"
