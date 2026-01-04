@@ -4,11 +4,13 @@ import { CodeGenerator } from '../../generators/CodeGenerator';
 import { downloadProject } from '../../utils/downloadProject';
 import { useProjectStore } from '../../store/projectStore';
 import { ProjectListModal } from '../modals/ProjectListModal';
+import { examples } from '../../examples';
 
 export const Header: React.FC = () => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const { currentProject, saveCurrentProject, loadProject, createProject } = useProjectStore();
   const [showFileMenu, setShowFileMenu] = useState(false);
+  const [showExamplesMenu, setShowExamplesMenu] = useState(false);
   const [showProjectList, setShowProjectList] = useState(false);
 
   // Keyboard shortcuts
@@ -75,6 +77,22 @@ export const Header: React.FC = () => {
       setNodes(project.nodes);
       setEdges(project.edges);
       alert(`✅ Loaded project "${project.name}"`);
+    }
+  };
+
+  const handleLoadExample = (exampleId: string) => {
+    if (getNodes().length > 0) {
+      if (!confirm('Loading an example will replace your current work. Continue?')) {
+        return;
+      }
+    }
+
+    const example = examples.find(ex => ex.id === exampleId);
+    if (example) {
+      setNodes(example.nodes);
+      setEdges(example.edges);
+      setShowExamplesMenu(false);
+      alert(`✅ Loaded example "${example.name}"`);
     }
   };
 
@@ -152,6 +170,43 @@ export const Header: React.FC = () => {
           <button className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition">
             View
           </button>
+
+          {/* Examples Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowExamplesMenu(!showExamplesMenu)}
+              className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition"
+            >
+              Examples
+            </button>
+            {showExamplesMenu && (
+              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                <div className="p-2 border-b border-gray-200">
+                  <h3 className="text-xs font-semibold text-gray-600 uppercase">Example Projects</h3>
+                </div>
+                {examples.map(example => (
+                  <button
+                    key={example.id}
+                    onClick={() => handleLoadExample(example.id)}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 text-sm">{example.name}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{example.description}</div>
+                      </div>
+                      <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${example.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
+                        example.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700' :
+                          'bg-purple-100 text-purple-700'
+                        }`}>
+                        {example.difficulty}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Project Name */}
@@ -180,6 +235,9 @@ export const Header: React.FC = () => {
       {/* Close menu when clicking outside */}
       {showFileMenu && (
         <div className="fixed inset-0 z-40" onClick={() => setShowFileMenu(false)} />
+      )}
+      {showExamplesMenu && (
+        <div className="fixed inset-0 z-40" onClick={() => setShowExamplesMenu(false)} />
       )}
 
       {/* Project List Modal */}

@@ -132,12 +132,61 @@ Phase 5: 待規劃                                  0%
 
 ---
 
-## 📋 Phase 2: 待規劃（0%）
+## 📋 Phase 2: 專案管理與範例（進行中）
 
-**狀態**: 🔜 待開始  
+**狀態**: 🔄 進行中  
 **優先級**: 高
 
-### 候選功能
+### Phase 2.1: 專案管理系統（100% ✅）
+
+**時程**: 2026-01-04  
+**Git Commit**: 最新提交
+
+#### 完成項目
+- [x] LocalStorage 儲存機制
+- [x] Project 類型定義
+- [x] ProjectStore (Zustand)
+- [x] LocalStorage 工具函數
+- [x] File 選單下拉
+- [x] ProjectListModal 元件
+- [x] 新建專案 (Ctrl+N)
+- [x] 儲存專案 (Ctrl+S)
+- [x] 開啟專案 (Ctrl+O)
+- [x] 刪除專案
+- [x] 重新命名專案（雙擊）
+- [x] 專案搜尋功能
+- [x] 淺色主題配色統一
+
+#### 成果
+- ✅ 完整的專案 CRUD 功能
+- ✅ LocalStorage 持久化
+- ✅ 快捷鍵支援
+- ✅ 統一淺色主題
+- ✅ 專案元資訊顯示
+
+### Phase 2.2: 預設範例專案（100% ✅）
+
+**時程**: 2026-01-04  
+**Git Commit**: 即將提交
+
+#### 完成項目
+- [x] ExampleProject 類型定義
+- [x] MNIST Classifier 範例（Beginner）
+- [x] Simple CNN 範例（Intermediate）
+- [x] Examples 選單（Header）
+- [x] 難度標籤顯示
+- [x] 一鍵載入功能
+- [x] 確認對話框（避免覆蓋現有工作）
+- [x] 淺色主題統一
+
+#### 成果
+- ✅ 2 個完整範例專案
+- ✅ MNIST: 11 個節點
+- ✅ Simple CNN: 11 個節點
+- ✅ Examples 下拉選單
+- ✅ 自動載入節點和連線
+
+### Phase 2.3: UI/UX 改進（待開始）
 
 **選項 A: 專案管理**
 - [ ] LocalStorage 儲存
