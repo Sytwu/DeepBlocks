@@ -16,6 +16,7 @@ import { CustomNode } from '../nodes/CustomNode';
 import { nodeRegistry } from '../../registry/NodeRegistry';
 import { useFlowStore } from '../../store/flowStore';
 import { useAutoSave } from '../../hooks/useAutoSave';
+import { useToast } from '../../contexts/ToastContext';
 
 const nodeTypes: NodeTypes = {
     custom: CustomNode,
@@ -32,15 +33,54 @@ export const FlowCanvas: React.FC = () => {
 
     const setSelectedNodeId = useFlowStore((state) => state.setSelectedNodeId);
     const setStoreNodes = useFlowStore((state) => state.setNodes);
+    const setStoreEdges = useFlowStore((state) => state.setEdges);
+    const saveHistory = useFlowStore((state) => state.saveHistory);
+    const undo = useFlowStore((state) => state.undo);
+    const redo = useFlowStore((state) => state.redo);
 
-    // Sync nodes to store
+    // 修復：直接選擇值而非調用函數
+    const canUndo = useFlowStore((state) => state.historyIndex > 0);
+    const canRedo = useFlowStore((state) => state.historyIndex < state.history.length - 1);
+    const toast = useToast();
+
+
+    // Sync nodes and edges to store (NO automatic history save)
     useEffect(() => {
         setStoreNodes(nodes);
-    }, [nodes, setStoreNodes]);
+        setStoreEdges(edges);
+    }, [nodes, edges, setStoreNodes, setStoreEdges]);
 
+    // Undo/Redo handlers with state sync
+    const handleUndo = useCallback(() => {
+        if (canUndo) {
+            undo();
+            // 關鍵修復：同步 store 狀態到 ReactFlow
+            const state = useFlowStore.getState();
+            setNodes(state.nodes);
+            setEdges(state.edges);
+            toast.success('Undo');
+        }
+    }, [canUndo, undo, setNodes, setEdges, toast]);
+
+    const handleRedo = useCallback(() => {
+        if (canRedo) {
+            redo();
+            // 關鍵修復：同步 store 狀態到 ReactFlow
+            const state = useFlowStore.getState();
+            setNodes(state.nodes);
+            setEdges(state.edges);
+            toast.success('Redo');
+        }
+    }, [canRedo, redo, setNodes, setEdges, toast]);
+
+    // Event: Connection created - save history after edge added
     const onConnect = useCallback(
-        (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges]
+        (params: Connection) => {
+            setEdges((eds) => addEdge(params, eds));
+            // Use setTimeout to ensure state update completes
+            setTimeout(() => saveHistory(), 0);
+        },
+        [setEdges, saveHistory]
     );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -59,9 +99,12 @@ export const FlowCanvas: React.FC = () => {
             if (!nodeDef) return;
 
             const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
+            if (!reactFlowBounds) return;
+
+            // Use ReactFlow's project method for accurate position calculation
             const position = {
-                x: event.clientX - (reactFlowBounds?.left || 0) - 80,
-                y: event.clientY - (reactFlowBounds?.top || 0) - 40,
+                x: event.clientX - reactFlowBounds.left,
+                y: event.clientY - reactFlowBounds.top,
             };
 
             // Create default params from node definition
@@ -83,9 +126,26 @@ export const FlowCanvas: React.FC = () => {
             };
 
             setNodes((nds) => nds.concat(newNode));
+            // Event: Node added - save history
+            setTimeout(() => saveHistory(), 0);
         },
-        [setNodes]
+        [setNodes, saveHistory]
     );
+
+    // Event: Node drag stopped - save final position
+    const onNodeDragStop = useCallback(() => {
+        setTimeout(() => saveHistory(), 0);
+    }, [saveHistory]);
+
+    // Event: Nodes deleted (via ReactFlow)
+    const onNodesDelete = useCallback(() => {
+        setTimeout(() => saveHistory(), 0);
+    }, [saveHistory]);
+
+    // Event: Edges deleted
+    const onEdgesDelete = useCallback(() => {
+        setTimeout(() => saveHistory(), 0);
+    }, [saveHistory]);
 
     const onSelectionChange = useCallback(
         ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
@@ -101,8 +161,24 @@ export const FlowCanvas: React.FC = () => {
     // Handle keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            // Delete selected nodes
-            if (event.key === 'Delete' || event.key === 'Backspace') {
+            // Prevent if typing in input
+            const target = event.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Ctrl+Z: Undo
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+                event.preventDefault();
+                handleUndo();
+            }
+            // Ctrl+Y or Ctrl+Shift+Z: Redo
+            else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+                event.preventDefault();
+                handleRedo();
+            }
+            // Delete selected nodes (manual keyboard delete)
+            else if (event.key === 'Delete' || event.key === 'Backspace') {
                 setNodes((nds) => nds.filter((node) => !node.selected));
                 setEdges((eds) => eds.filter((edge) => {
                     const sourceNode = nodes.find((n) => n.id === edge.source);
@@ -110,12 +186,14 @@ export const FlowCanvas: React.FC = () => {
                     return sourceNode && !sourceNode.selected && targetNode && !targetNode.selected;
                 }));
                 setSelectedNodeId(null);
+                // Event: Manual delete - save history
+                setTimeout(() => saveHistory(), 0);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [setNodes, setEdges, nodes, setSelectedNodeId]);
+    }, [setNodes, setEdges, nodes, setSelectedNodeId, handleUndo, handleRedo, saveHistory]);
 
     return (
         <div className="flex-1 relative bg-background" ref={reactFlowWrapper}>
@@ -128,6 +206,9 @@ export const FlowCanvas: React.FC = () => {
                 onDrop={onDrop}
                 onDragOver={onDragOver}
                 onSelectionChange={onSelectionChange}
+                onNodeDragStop={onNodeDragStop}
+                onNodesDelete={onNodesDelete}
+                onEdgesDelete={onEdgesDelete}
                 nodeTypes={nodeTypes}
                 fitView
                 className="bg-background"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useFlowStore } from '../../store/flowStore';
 import { nodeRegistry } from '../../registry/NodeRegistry';
 import { ParamConfig } from '../../types/nodes';
@@ -8,15 +8,33 @@ export const PropertyPanel: React.FC = () => {
     const selectedNodeId = useFlowStore((state) => state.selectedNodeId);
     const nodes = useFlowStore((state) => state.nodes);
     const updateNodeParams = useFlowStore((state) => state.updateNodeParams);
+    const saveHistory = useFlowStore((state) => state.saveHistory);
+
+    // Debounce timer for text input
+    const textInputTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const selectedNode = nodes.find((n) => n.id === selectedNodeId);
     const nodeDef = selectedNode ? nodeRegistry.getNode(selectedNode.data.type) : null;
 
-    const handleParamChange = (paramName: string, value: any) => {
+    const handleParamChange = useCallback((paramName: string, value: any, paramType: string) => {
         if (selectedNodeId) {
             updateNodeParams(selectedNodeId, { [paramName]: value });
+
+            // Event: Parameter changed - save history
+            if (paramType === 'string') {
+                // Debounce text input to avoid excessive history entries during typing
+                if (textInputTimerRef.current) {
+                    clearTimeout(textInputTimerRef.current);
+                }
+                textInputTimerRef.current = setTimeout(() => {
+                    saveHistory();
+                }, 300);
+            } else {
+                // Immediate save for number, boolean, select
+                setTimeout(() => saveHistory(), 0);
+            }
         }
-    };
+    }, [selectedNodeId, updateNodeParams, saveHistory]);
 
     const renderParam = (param: ParamConfig, currentValue: any) => {
         switch (param.type) {
@@ -25,7 +43,7 @@ export const PropertyPanel: React.FC = () => {
                     <input
                         type="number"
                         value={currentValue ?? param.default}
-                        onChange={(e) => handleParamChange(param.name, Number(e.target.value))}
+                        onChange={(e) => handleParamChange(param.name, Number(e.target.value), 'number')}
                         min={param.min}
                         max={param.max}
                         step={param.step}
@@ -37,7 +55,7 @@ export const PropertyPanel: React.FC = () => {
                     <input
                         type="text"
                         value={currentValue ?? param.default}
-                        onChange={(e) => handleParamChange(param.name, e.target.value)}
+                        onChange={(e) => handleParamChange(param.name, e.target.value, 'string')}
                         className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
                     />
                 );
@@ -47,7 +65,7 @@ export const PropertyPanel: React.FC = () => {
                         <input
                             type="checkbox"
                             checked={currentValue ?? param.default}
-                            onChange={(e) => handleParamChange(param.name, e.target.checked)}
+                            onChange={(e) => handleParamChange(param.name, e.target.checked, 'boolean')}
                             className="w-4 h-4"
                         />
                         <span className="text-sm">Enabled</span>
@@ -57,7 +75,7 @@ export const PropertyPanel: React.FC = () => {
                 return (
                     <select
                         value={currentValue ?? param.default}
-                        onChange={(e) => handleParamChange(param.name, e.target.value)}
+                        onChange={(e) => handleParamChange(param.name, e.target.value, 'select')}
                         className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
                     >
                         {param.options?.map((option) => (

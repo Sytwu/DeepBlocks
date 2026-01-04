@@ -19,6 +19,7 @@ import {
     ConcatNode,
     AddNode,
     ReshapeNode,
+    ResNetBlockNode,
 } from './nodes';
 
 class NodeRegistry {
@@ -51,6 +52,9 @@ class NodeRegistry {
         this.registerNode(ConcatNode);
         this.registerNode(AddNode);
         this.registerNode(ReshapeNode);
+
+        // Blocks
+        this.registerNode(ResNetBlockNode);
     }
 
     registerNode(node: NodeDefinition) {

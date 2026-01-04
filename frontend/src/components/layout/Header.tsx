@@ -3,6 +3,7 @@ import { useReactFlow } from 'reactflow';
 import { CodeGenerator } from '../../generators/CodeGenerator';
 import { downloadProject } from '../../utils/downloadProject';
 import { useProjectStore } from '../../store/projectStore';
+import { useFlowStore } from '../../store/flowStore';
 import { ProjectListModal } from '../modals/ProjectListModal';
 import { examples } from '../../examples';
 import { SaveIndicator } from '../ui/SaveIndicator';
@@ -12,6 +13,7 @@ import { useToast } from '../../contexts/ToastContext';
 export const Header: React.FC = () => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const { currentProject, saveCurrentProject, loadProject, createProject } = useProjectStore();
+  const { clearHistory, saveHistory } = useFlowStore();
   const toast = useToast();
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showExamplesMenu, setShowExamplesMenu] = useState(false);
@@ -48,6 +50,8 @@ export const Header: React.FC = () => {
       createProject(name.trim());
       setNodes([]);
       setEdges([]);
+      // Clear history when creating new project
+      clearHistory();
       toast.success(`Created project "${name}"`);
     }
     setShowFileMenu(false);
@@ -80,6 +84,9 @@ export const Header: React.FC = () => {
     if (project) {
       setNodes(project.nodes);
       setEdges(project.edges);
+      // Clear history and save initial state after loading project
+      clearHistory();
+      setTimeout(() => saveHistory(), 0);
       toast.success(`Loaded project "${project.name}"`);
     }
   };
@@ -96,6 +103,9 @@ export const Header: React.FC = () => {
       setNodes(example.nodes);
       setEdges(example.edges);
       setShowExamplesMenu(false);
+      // Clear history and save initial state after loading example
+      clearHistory();
+      setTimeout(() => saveHistory(), 0);
       toast.success(`Loaded example "${example.name}"`);
     }
   };

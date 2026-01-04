@@ -334,3 +334,57 @@ export const ReshapeNode: NodeDefinition = {
     pythonTemplate: (params: Record<string, any>) => `# Reshape operation
 x = x.view(${params.shape})`,
 };
+
+// ==================== Blocks ====================
+
+export const ResNetBlockNode: NodeDefinition = {
+    id: 'resnet_block',
+    label: 'ResNet Block',
+    category: 'Model Architecture - Blocks',
+    description: 'Residual Block with skip connection (Conv-BN-ReLU-Conv-BN structure)',
+    color: '#7c3aed',
+    params: [
+        { name: 'in_channels', label: 'In Channels', type: 'number', default: 64, min: 1 },
+        { name: 'out_channels', label: 'Out Channels', type: 'number', default: 64, min: 1 },
+        { name: 'stride', label: 'Stride', type: 'number', default: 1, min: 1 },
+        { name: 'downsample', label: 'Downsample', type: 'boolean', default: false },
+    ],
+    inputs: [{ name: 'input', label: 'Input', type: 'tensor' }],
+    outputs: [{ name: 'output', label: 'Output', type: 'tensor' }],
+    pythonTemplate: (params: Record<string, any>) => `# ResNet Block
+class ResNetBlock(nn.Module):
+    def __init__(self, in_channels=${params.in_channels}, out_channels=${params.out_channels}, stride=${params.stride}):
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        ${params.downsample ? `# Downsample for skip connection
+        self.downsample = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
+            nn.BatchNorm2d(out_channels)
+        )` : 'self.downsample = None'}
+    
+    def forward(self, x):
+        identity = x
+        
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        
+        out = self.conv2(out)
+        out = self.bn2(out)
+        
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        
+        out += identity
+        out = self.relu(out)
+        
+        return out
+
+self.resnet_block = ResNetBlock(in_channels=${params.in_channels}, out_channels=${params.out_channels}, stride=${params.stride})`,
+};
+
