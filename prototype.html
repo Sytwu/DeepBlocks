@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepBlocks - Interactive Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #f1f5f9;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            height: 60px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .menu button {
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .menu button:hover {
+            background: #334155;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        /* Left Panel - Node Library */
+        .node-library {
+            width: 280px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-box {
+            padding: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f1f5f9;
+            font-size: 14px;
+        }
+
+        .node-categories {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .node-item {
+            padding: 10px 12px;
+            background: #334155;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: move;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .node-item:hover {
+            background: #475569;
+            transform: translateX(4px);
+        }
+
+        .node-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        /* Canvas */
+        .canvas {
+            flex: 1;
+            background: #0f172a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle, #334155 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+
+        .canvas-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Nodes on Canvas */
+        .canvas-node {
+            position: absolute;
+            background: #1e293b;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            cursor: move;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        .canvas-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .canvas-node.selected {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .node-params {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .node-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #64748b;
+            border: 2px solid #1e293b;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.2s;
+        }
+
+        .node-handle.left {
+            left: -6px;
+        }
+
+        .node-handle.right {
+            right: -6px;
+        }
+
+        .node-handle:hover {
+            background: #3b82f6;
+            transform: translateY(-50%) scale(1.3);
+        }
+
+        /* Right Panel - Properties */
+        .property-panel {
+            width: 350px;
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #334155;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .property-group {
+            margin-bottom: 16px;
+        }
+
+        .property-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f1f5f9;
+            font-size: 14px;
+        }
+
+        .code-preview {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+        }
+
+        /* Mini Map */
+        .minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #cbd5e1;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .control-btn:hover {
+            background: #334155;
+            color: #3b82f6;
+        }
+
+        /* Hidden tabs */
+        .hidden {
+            display: none;
+        }
+
+        /* Instruction Overlay */
+        .instruction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #64748b;
+            pointer-events: none;
+        }
+
+        .instruction h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .instruction p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">DeepBlocks</div>
+        <div class="menu">
+            <button>File</button>
+            <button>Edit</button>
+            <button>View</button>
+        </div>
+        <div style="margin-left: auto;">
+            <button class="menu">Login</button>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Left Panel -->
+        <div class="node-library">
+            <div class="search-box">
+                <input type="text" placeholder="Search nodes..." id="searchInput">
+            </div>
+            <div class="node-categories">
+                <div class="category">
+                    <div class="category-title">Data Processing</div>
+                    <div class="node-item" draggable="true" data-type="input">
+                        <div class="node-icon" style="background: #3b82f6;"></div>
+                        <span>Input</span>
+                    </div>
+                    <div class="node-item" draggable="true" data-type="dataloader">
+                        <div class="node-icon" style="background: #3b82f6;"></div>
+                        <span>DataLoader</span>
+                    </div>
+                </div>
+
+                <div class="category">
+                    <div class="category-title">Model Architecture</div>
+                    <div class="node-item" draggable="true" data-type="conv2d">
+                        <div class="node-icon" style="background: #2563eb;"></div>
+                        <span>Conv2d</span>
+                    </div>
+                    <div class="node-item" draggable="true" data-type="linear">
+                        <div class="node-icon" style="background: #2563eb;"></div>
+                        <span>Linear</span>
+                    </div>
+                    <div class="node-item" draggable="true" data-type="relu">
+                        <div class="node-icon" style="background: #10b981;"></div>
+                        <span>ReLU</span>
+                    </div>
+                </div>
+
+                <div class="category">
+                    <div class="category-title">Blocks</div>
+                    <div class="node-item" draggable="true" data-type="resnet">
+                        <div class="node-icon" style="background: #8b5cf6;"></div>
+                        <span>ResNet Block</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas" id="canvas">
+            <div class="canvas-grid"></div>
+            <div class="canvas-content" id="canvasContent">
+                <div class="instruction">
+                    <h2>👈 拖曳節點到這裡開始設計</h2>
+                    <p>從左側拖曳節點，點擊節點查看屬性</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="control-btn" title="Zoom In" onclick="zoom(1.2)">+</button>
+                <button class="control-btn" title="Zoom Out" onclick="zoom(0.8)">−</button>
+                <button class="control-btn" title="Reset" onclick="resetView()">⟲</button>
+            </div>
+
+            <!-- Mini Map -->
+            <div class="minimap"></div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="property-panel">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('properties')">Properties</button>
+                <button class="tab" onclick="switchTab('code')">Code</button>
+            </div>
+
+            <div class="tab-content" id="propertiesTab">
+                <div id="propertyContent">
+                    <p style="color: #64748b; text-align: center; margin-top: 40px;">
+                        選擇一個節點以編輯屬性
+                    </p>
+                </div>
+            </div>
+
+            <div class="tab-content hidden" id="codeTab">
+                <div class="code-preview" id="codePreview">
+# Generated PyTorch Code
+
+import torch
+import torch.nn as nn
+
+class CustomModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Your layers will appear here
+        pass
+    
+    def forward(self, x):
+        # Forward pass will be generated
+        return x
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedNode = null;
+        let draggedElement = null;
+        let offsetX = 0, offsetY = 0;
+        let nodeCounter = 0;
+        let scale = 1;
+
+        const nodeDefinitions = {
+            input: {
+                label: 'Input',
+                color: '#3b82f6',
+                params: {
+                    shape: '[1, 3, 224, 224]',
+                    dtype: 'float32'
+                }
+            },
+            dataloader: {
+                label: 'DataLoader',
+                color: '#3b82f6',
+                params: {
+                    batch_size: 64,
+                    shuffle: true
+                }
+            },
+            conv2d: {
+                label: 'Conv2d',
+                color: '#2563eb',
+                params: {
+                    in_channels: 3,
+                    out_channels: 64,
+                    kernel_size: 3
+                }
+            },
+            linear: {
+                label: 'Linear',
+                color: '#2563eb',
+                params: {
+                    in_features: 512,
+                    out_features: 10
+                }
+            },
+            relu: {
+                label: 'ReLU',
+                color: '#10b981',
+                params: {}
+            },
+            resnet: {
+                label: 'ResNet Block',
+                color: '#8b5cf6',
+                params: {
+                    num_layers: 2,
+                    stride: 1
+                }
+            }
+        };
+
+        // Drag from library
+        document.querySelectorAll('.node-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('nodeType', e.target.dataset.type);
+            });
+        });
+
+        // Drop on canvas
+        const canvas = document.getElementById('canvas');
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const nodeType = e.dataTransfer.getData('nodeType');
+            if (!nodeType) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            createNode(nodeType, x, y);
+            document.querySelector('.instruction').style.display = 'none';
+        });
+
+        function createNode(type, x, y) {
+            const def = nodeDefinitions[type];
+            const node = document.createElement('div');
+            node.className = 'canvas-node';
+            node.style.left = x + 'px';
+            node.style.top = y + 'px';
+            node.style.borderColor = def.color;
+            node.dataset.id = ++nodeCounter;
+            node.dataset.type = type;
+
+            let paramsHtml = '';
+            for (let [key, value] of Object.entries(def.params)) {
+                paramsHtml += `<div>${key}: ${value}</div>`;
+            }
+
+            node.innerHTML = `
+                <div class="node-handle left"></div>
+                <div class="node-header">
+                    <div class="node-icon" style="background: ${def.color}; width: 16px; height: 16px; border-radius: 3px;"></div>
+                    <span>${def.label}</span>
+                </div>
+                <div class="node-params">${paramsHtml || '<div style="color: #64748b;">No parameters</div>'}</div>
+                <div class="node-handle right"></div>
+            `;
+
+            // Click to select
+            node.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectNode(node);
+            });
+
+            // Drag to move
+            node.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('node-handle')) return;
+                draggedElement = node;
+                offsetX = e.clientX - node.offsetLeft;
+                offsetY = e.clientY - node.offsetTop;
+            });
+
+            document.getElementById('canvasContent').appendChild(node);
+            selectNode(node);
+            updateCode();
+        }
+
+        // Move node
+        document.addEventListener('mousemove', (e) => {
+            if (!draggedElement) return;
+            const rect = canvas.getBoundingClientRect();
+            draggedElement.style.left = (e.clientX - rect.left - offsetX) + 'px';
+            draggedElement.style.top = (e.clientY - rect.top - offsetY) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            draggedElement = null;
+        });
+
+        // Deselect
+        canvas.addEventListener('click', (e) => {
+            if (e.target === canvas || e.target.classList.contains('canvas-grid') || e.target.classList.contains('canvas-content')) {
+                deselectAll();
+            }
+        });
+
+        function selectNode(node) {
+            deselectAll();
+            node.classList.add('selected');
+            selectedNode = node;
+            showProperties(node);
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('.canvas-node').forEach(n => n.classList.remove('selected'));
+            selectedNode = null;
+            document.getElementById('propertyContent').innerHTML = `
+                <p style="color: #64748b; text-align: center; margin-top: 40px;">
+                    選擇一個節點以編輯屬性
+                </p>
+            `;
+        }
+
+        function showProperties(node) {
+            const type = node.dataset.type;
+            const def = nodeDefinitions[type];
+            
+            let html = `<h3 style="margin-bottom: 16px;">${def.label}</h3>`;
+            
+            for (let [key, value] of Object.entries(def.params)) {
+                html += `
+                    <div class="property-group">
+                        <label class="property-label">${key}</label>
+                        <input class="property-input" type="${typeof value === 'number' ? 'number' : 'text'}" value="${value}">
+                    </div>
+                `;
+            }
+
+            document.getElementById('propertyContent').innerHTML = html;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            document.getElementById('propertiesTab').classList.toggle('hidden', tab !== 'properties');
+            document.getElementById('codeTab').classList.toggle('hidden', tab !== 'code');
+        }
+
+        function updateCode() {
+            const nodes = document.querySelectorAll('.canvas-node');
+            let code = `# Generated PyTorch Code\n\nimport torch\nimport torch.nn as nn\n\nclass CustomModel(nn.Module):\n    def __init__(self):\n        super().__init__()\n`;
+            
+            nodes.forEach((node, i) => {
+                const type = node.dataset.type;
+                const def = nodeDefinitions[type];
+                
+                if (type === 'conv2d') {
+                    code += `        self.conv${i} = nn.Conv2d(${def.params.in_channels}, ${def.params.out_channels}, ${def.params.kernel_size})\n`;
+                } else if (type === 'linear') {
+                    code += `        self.fc${i} = nn.Linear(${def.params.in_features}, ${def.params.out_features})\n`;
+                } else if (type === 'relu') {
+                    code += `        self.relu${i} = nn.ReLU()\n`;
+                }
+            });
+
+            code += `\n    def forward(self, x):\n        # TODO: Implement forward pass\n        return x\n`;
+            
+            document.getElementById('codePreview').textContent = code;
+        }
+
+        function zoom(factor) {
+            scale *= factor;
+            document.getElementById('canvasContent').style.transform = `scale(${scale})`;
+        }
+
+        function resetView() {
+            scale = 1;
+            document.getElementById('canvasContent').style.transform = 'scale(1)';
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.node-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

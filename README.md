@@ -1,1 +1,189 @@
 # DeepBlocks
+
+> 🎨 Visual Machine Learning Drag-and-Drop Platform - Making Deep Learning Architecture Design as Easy as Building Blocks
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.1.0--dev-orange)](docs/CHANGELOG.md)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+
+---
+
+## ✨ Features
+
+- 🎨 **Drag-and-Drop Design** - Scratch-like visual interface, intuitive and easy to use
+- ⚡ **Real-time Code Generation** - Automatically generates complete, executable PyTorch code
+- 📚 **Education-Friendly** - Helps beginners understand deep learning architectures
+- 🔬 **Research Tool** - Rapid prototyping for faster experimentation
+- 🏆 **Paper-Quality Visualization** - Top-tier conference-level architecture diagrams
+- 🌐 **PWA Support** - Works offline
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js >= 18
+- Python >= 3.10
+- Docker Desktop
+
+### 30-Second Interactive Prototype
+```bash
+# Open the interactive prototype directly in your browser
+open prototype.html
+```
+
+### Full Installation (See [Getting Started Guide](docs/GETTING_STARTED.md))
+```bash
+# 1. Frontend
+cd frontend
+npm install
+npm run dev
+
+# 2. Backend
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+
+# 3. Database
+docker-compose up -d
+```
+
+**Detailed Steps**: Please refer to [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
+
+---
+
+## 📖 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/GETTING_STARTED.md) | Environment setup and installation guide |
+| [Technical Specification](docs/technical-specification.md) | System architecture, API design |
+| [Development Roadmap](docs/development-roadmap.md) | 5-phase development plan |
+| [Implementation Guide](docs/implementation-phase1.md) | Phase 1 detailed steps |
+| [Visual Design Guide](docs/visual-design-guide.md) | UI/UX design specifications |
+| [Deployment Guide](docs/DEPLOYMENT.md) | GitHub Pages deployment |
+| [Changelog](docs/CHANGELOG.md) | Version change history |
+
+---
+
+## 🎯 Project Status
+
+**Current Version**: v0.1.0-dev (Phase 0: Environment Setup)  
+**Expected Release**: v1.0.0 @ Mid-March 2026
+
+### Development Progress
+- [x] Phase 0: Project Planning & Prototype Design
+- [ ] Phase 1: MVP Basic Canvas (Week 2-3)
+- [ ] Phase 2: Node System (Week 4-5)
+- [ ] Phase 3: Code Generation (Week 6-7)
+- [ ] Phase 4: Backend Services (Week 7-8)
+- [ ] Phase 5: Optimization & Deployment (Week 9-10)
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **UI Components**: Shadcn/UI + Tailwind CSS
+- **Graph Library**: React Flow
+- **State Management**: Zustand
+
+### Backend
+- **Framework**: FastAPI
+- **Database**: PostgreSQL
+- **Authentication**: JWT
+
+### Deployment
+- **Frontend**: GitHub Pages / Vercel
+- **Backend**: Railway / Render
+- **PWA**: Offline support
+
+---
+
+## 📂 Project Structure
+
+```
+DeepBlocks/
+├── frontend/          # React frontend application
+├── backend/           # FastAPI backend service
+├── docs/              # 📚 All project documentation
+├── prototype.html     # Interactive prototype
+└── docker-compose.yml # PostgreSQL container
+```
+
+---
+
+## 🎨 Preview
+
+> Design preview based on `prototype.html`
+
+**Main Features**:
+- 🎯 Three-column IDE layout
+- 📦 Drag nodes to canvas
+- ⚙️ Real-time property editing
+- 💻 Live code preview
+
+---
+
+## 🗺️ Roadmap
+
+### v0.1.0 (2026-02-09) - MVP Alpha
+- Basic canvas with node dragging
+- 20+ node definitions
+
+### v0.2.0 (2026-02-23) - Code Generation
+- PyTorch code generation
+- ZIP download functionality
+
+### v0.3.0 (2026-03-09) - Backend Integration
+- User authentication
+- Cloud project storage
+
+### v1.0.0 (2026-03-16) - Official Release
+- Full features
+- PWA support
+- 3+ preset examples
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow this workflow:
+
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+**Note**: All documentation should be placed in the `docs/` directory, and major changes must update `docs/CHANGELOG.md`
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+---
+
+## 🌟 Star History
+
+If this project helps you, please give us a ⭐️!
+
+---
+
+## 📞 Contact Us
+
+- 📧 Email: [Coming Soon]
+- 💬 Discord: [Coming Soon]
+- 🐦 Twitter: [Coming Soon]
+
+---
+
+**Built with ❤️ by DeepBlocks Team**
