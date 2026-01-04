@@ -40,20 +40,33 @@ export const ProjectListModal: React.FC<ProjectListModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
-            <div className="bg-white border border-gray-200 rounded-lg w-[600px] max-h-[80vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div
+                className="rounded-lg w-[600px] max-h-[80vh] flex flex-col shadow-2xl"
+                onClick={e => e.stopPropagation()}
+                style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    borderColor: 'var(--border-color)',
+                    border: '1px solid',
+                }}
+            >
                 {/* Header */}
-                <div className="p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-900">Open Project</h2>
+                <div className="p-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Open Project</h2>
                 </div>
 
                 {/* Search */}
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <input
                         type="text"
                         placeholder="Search projects..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                            backgroundColor: 'var(--bg-secondary)',
+                            borderColor: 'var(--border-color)',
+                            color: 'var(--text-primary)',
+                        }}
                         autoFocus
                     />
                 </div>
@@ -61,7 +74,7 @@ export const ProjectListModal: React.FC<ProjectListModalProps> = ({
                 {/* Project List */}
                 <div className="flex-1 overflow-y-auto p-4">
                     {filteredProjects.length === 0 ? (
-                        <div className="text-center text-gray-500 py-12">
+                        <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
                             {searchQuery ? 'No projects found' : 'No projects yet. Create your first project!'}
                         </div>
                     ) : (
@@ -69,7 +82,14 @@ export const ProjectListModal: React.FC<ProjectListModalProps> = ({
                             {filteredProjects.map(project => (
                                 <div
                                     key={project.id}
-                                    className="p-4 bg-gray-50 rounded-md hover:bg-gray-100 transition cursor-pointer border border-gray-200"
+                                    className="p-4 rounded-md transition cursor-pointer"
+                                    style={{
+                                        backgroundColor: 'var(--bg-secondary)',
+                                        borderColor: 'var(--border-color)',
+                                        border: '1px solid',
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
                                     onClick={() => {
                                         onSelectProject(project.id);
                                         onClose();
@@ -88,12 +108,18 @@ export const ProjectListModal: React.FC<ProjectListModalProps> = ({
                                                         if (e.key === 'Escape') setEditingId(null);
                                                     }}
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="px-2 py-1 bg-white border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    className="px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    style={{
+                                                        backgroundColor: 'var(--bg-primary)',
+                                                        borderColor: 'var(--border-color)',
+                                                        color: 'var(--text-primary)',
+                                                    }}
                                                     autoFocus
                                                 />
                                             ) : (
                                                 <h3
-                                                    className="font-semibold text-gray-900"
+                                                    className="font-semibold cursor-pointer"
+                                                    style={{ color: 'var(--text-primary)' }}
                                                     onDoubleClick={(e) => {
                                                         e.stopPropagation();
                                                         setEditingId(project.id);
@@ -103,13 +129,13 @@ export const ProjectListModal: React.FC<ProjectListModalProps> = ({
                                                     {project.name}
                                                 </h3>
                                             )}
-                                            <p className="text-xs text-gray-500 mt-1">
+                                            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
                                                 {project.nodeCount} nodes • {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
                                             </p>
                                         </div>
                                         <button
                                             onClick={(e) => handleDelete(project.id, e)}
-                                            className="ml-2 px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition"
+                                            className="ml-2 px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition cursor-pointer"
                                         >
                                             Delete
                                         </button>
@@ -121,10 +147,16 @@ export const ProjectListModal: React.FC<ProjectListModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-200 flex justify-end">
+                <div className="p-4 flex justify-end" style={{ borderTop: '1px solid var(--border-color)' }}>
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+                        className="px-4 py-2 text-sm rounded transition cursor-pointer"
+                        style={{
+                            backgroundColor: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
                     >
                         Cancel
                     </button>

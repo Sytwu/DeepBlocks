@@ -227,7 +227,33 @@ Phase 5: 待規劃                                  0%
 - ✅ 不影響手動儲存（Ctrl+S）
 - ✅ 防止資料遺失
 
-### Phase 2.5: 待規劃（0%）
+### Phase 2.5: UI/UX 完善套件（100% ✅）
+
+**時程**: 2026-01-04  
+**Git Commit**: 即將提交
+
+#### 完成項目
+- [x] 深淺色模式切換（預設深色）
+- [x] useTheme Hook + LocalStorage 持久化
+- [x] ThemeToggle 按鈕元件
+- [x] CSS 變數支援兩種主題
+- [x] Toast 通知系統
+- [x] ToastContext + useToast Hook
+- [x] Toast 元件（4 種類型）
+- [x] 替換所有 alert() 為 toast
+- [x] UI 一致性改進
+- [x] 所有選單支援深色模式
+- [x] 所有可點擊元素添加 cursor-pointer
+- [x] 節點拖曳 cursor (grab/grabbing)
+
+#### 成果
+- ✅ 深淺色主題完全整合（預設深色）
+- ✅ 所有元件跟隨主題變換
+- ✅ Toast 通知替代所有 alert
+- ✅ 改善 UX（cursor feedback）
+- ✅ 視覺一致性提升
+
+### Phase 2.6: 待規劃（0%）
 
 **選項 A: 專案管理**
 - [ ] LocalStorage 儲存

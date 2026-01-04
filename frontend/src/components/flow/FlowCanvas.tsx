@@ -132,10 +132,12 @@ export const FlowCanvas: React.FC = () => {
                 fitView
                 className="bg-background"
             >
-                <Background variant={BackgroundVariant.Dots} gap={16} size={1} className="bg-background" />
-                <Controls className="bg-card border border-border text-foreground" />
+                <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="var(--border-color)" />
+                <Controls />
                 <MiniMap
-                    className="bg-card border border-border"
+                    style={{
+                        backgroundColor: 'var(--bg-secondary)',
+                    }}
                     nodeColor={(node) => node.data.color || '#3b82f6'}
                     maskColor="rgba(0, 0, 0, 0.1)"
                 />

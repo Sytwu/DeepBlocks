@@ -85,7 +85,7 @@ export const PropertyPanel: React.FC = () => {
             <div className="flex border-b border-border">
                 <button
                     onClick={() => setActiveTab('properties')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition border-b-2 ${activeTab === 'properties'
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition border-b-2 cursor-pointer ${activeTab === 'properties'
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}
@@ -94,7 +94,7 @@ export const PropertyPanel: React.FC = () => {
                 </button>
                 <button
                     onClick={() => setActiveTab('code')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition border-b-2 ${activeTab === 'code'
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition border-b-2 cursor-pointer ${activeTab === 'code'
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}

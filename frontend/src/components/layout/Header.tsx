@@ -6,10 +6,13 @@ import { useProjectStore } from '../../store/projectStore';
 import { ProjectListModal } from '../modals/ProjectListModal';
 import { examples } from '../../examples';
 import { SaveIndicator } from '../ui/SaveIndicator';
+import { ThemeToggle } from '../ui/ThemeToggle';
+import { useToast } from '../../contexts/ToastContext';
 
 export const Header: React.FC = () => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const { currentProject, saveCurrentProject, loadProject, createProject } = useProjectStore();
+  const toast = useToast();
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showExamplesMenu, setShowExamplesMenu] = useState(false);
   const [showProjectList, setShowProjectList] = useState(false);
@@ -45,7 +48,7 @@ export const Header: React.FC = () => {
       createProject(name.trim());
       setNodes([]);
       setEdges([]);
-      alert(`✅ Created project "${name}"`);
+      toast.success(`Created project "${name}"`);
     }
     setShowFileMenu(false);
   };
@@ -58,11 +61,11 @@ export const Header: React.FC = () => {
       const name = prompt('Enter project name:', 'My Project');
       if (name) {
         createProject(name.trim(), nodes, edges);
-        alert(`✅ Project "${name}" saved!`);
+        toast.success(`Project "${name}" saved!`);
       }
     } else {
       saveCurrentProject(nodes, edges);
-      alert(`✅ Project "${currentProject.name}" saved!`);
+      toast.success(`Project "${currentProject.name}" saved!`);
     }
     setShowFileMenu(false);
   };
@@ -77,7 +80,7 @@ export const Header: React.FC = () => {
     if (project) {
       setNodes(project.nodes);
       setEdges(project.edges);
-      alert(`✅ Loaded project "${project.name}"`);
+      toast.success(`Loaded project "${project.name}"`);
     }
   };
 
@@ -93,7 +96,7 @@ export const Header: React.FC = () => {
       setNodes(example.nodes);
       setEdges(example.edges);
       setShowExamplesMenu(false);
-      alert(`✅ Loaded example "${example.name}"`);
+      toast.success(`Loaded example "${example.name}"`);
     }
   };
 
@@ -102,18 +105,23 @@ export const Header: React.FC = () => {
     const edges = getEdges();
 
     if (nodes.length === 0) {
-      alert('⚠️ Please add some nodes to the canvas first!');
+      toast.warning('Please add some nodes to the canvas first!');
       return;
     }
 
     try {
       const generator = new CodeGenerator(nodes, edges);
       const files = generator.generateAll();
+
+      if (Object.keys(files).length === 0) {
+        toast.warning('No nodes to export!');
+        return;
+      }
       await downloadProject(files, currentProject?.name || 'deepblocks-project');
-      alert('✅ Project exported successfully!');
+      toast.success('Project exported successfully!');
     } catch (error) {
       console.error('Export error:', error);
-      alert('❌ Failed to export project. Please try again.');
+      toast.error('Failed to export project. Please try again.');
     }
   };
 
@@ -127,37 +135,51 @@ export const Header: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setShowFileMenu(!showFileMenu)}
-              className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition"
+              onBlur={() => setTimeout(() => setShowFileMenu(false), 150)}
+              className="px-3 py-1.5 text-sm hover:bg-accent rounded transition cursor-pointer"
+              style={{ color: 'var(--text-primary)' }}
             >
               File
             </button>
             {showFileMenu && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+              <div className="absolute top-full left-0 mt-1 w-48 rounded-md shadow-lg z-50" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
                 <button
                   onClick={handleNew}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between rounded-t-md"
+                  className="w-full px-4 py-2 text-left text-sm flex items-center justify-between rounded-t-md cursor-pointer"
+                  style={{ color: 'var(--text-primary)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   New Project
-                  <span className="text-xs text-gray-500">Ctrl+N</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Ctrl+N</span>
                 </button>
                 <button
                   onClick={handleSave}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+                  className="w-full px-4 py-2 text-left text-sm flex items-center justify-between cursor-pointer"
+                  style={{ color: 'var(--text-primary)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   Save
-                  <span className="text-xs text-gray-500">Ctrl+S</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Ctrl+S</span>
                 </button>
                 <button
                   onClick={handleOpen}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+                  className="w-full px-4 py-2 text-left text-sm flex items-center justify-between cursor-pointer"
+                  style={{ color: 'var(--text-primary)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   Open...
-                  <span className="text-xs text-gray-500">Ctrl+O</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Ctrl+O</span>
                 </button>
-                <div className="border-t border-gray-200 my-1"></div>
+                <div className="my-1" style={{ borderTop: '1px solid var(--border-color)' }}></div>
                 <button
                   onClick={() => { handleExport(); setShowFileMenu(false); }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-b-md"
+                  className="w-full px-4 py-2 text-left text-sm rounded-b-md cursor-pointer"
+                  style={{ color: 'var(--text-primary)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   Export Code
                 </button>
@@ -165,10 +187,10 @@ export const Header: React.FC = () => {
             )}
           </div>
 
-          <button className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition">
+          <button className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition cursor-pointer">
             Edit
           </button>
-          <button className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition">
+          <button className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition cursor-pointer">
             View
           </button>
 
@@ -176,25 +198,28 @@ export const Header: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setShowExamplesMenu(!showExamplesMenu)}
-              className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition"
+              className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded transition cursor-pointer"
             >
               Examples
             </button>
             {showExamplesMenu && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                <div className="p-2 border-b border-gray-200">
-                  <h3 className="text-xs font-semibold text-gray-600 uppercase">Example Projects</h3>
+              <div className="absolute top-full left-0 mt-1 w-64 rounded-md shadow-lg z-50" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
+                <div className="p-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <h3 className="text-xs font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Example Projects</h3>
                 </div>
                 {examples.map(example => (
                   <button
                     key={example.id}
                     onClick={() => handleLoadExample(example.id)}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    className="w-full px-4 py-3 text-left last:border-b-0 cursor-pointer"
+                    style={{ borderBottom: '1px solid var(--border-color)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900 text-sm">{example.name}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">{example.description}</div>
+                        <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{example.name}</div>
+                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{example.description}</div>
                       </div>
                       <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${example.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
                         example.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700' :
@@ -221,9 +246,12 @@ export const Header: React.FC = () => {
           {/* Save Indicator */}
           <SaveIndicator />
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           <button
             onClick={handleExport}
-            className="px-4 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition flex items-center gap-2"
+            className="px-4 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition flex items-center gap-2 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

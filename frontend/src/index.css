@@ -1,36 +1,57 @@
 @import "tailwindcss";
 
-@theme {
-  --color-canvas-bg: #0f172a;
-  --color-node-bg: #1e293b;
+/* Light & Dark Theme Variables */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
 
-  --color-background: 222.2 84% 4.9%;
-  --color-foreground: 210 40% 98%;
+  /* Canvas Colors */
+  --canvas-bg: #f9fafb;
+  --node-bg: #ffffff;
 
-  --color-card: 222.2 84% 4.9%;
-  --color-card-foreground: 210 40% 98%;
+  /* UI Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --bg-tertiary: #e5e7eb;
 
-  --color-popover: 222.2 84% 4.9%;
-  --color-popover-foreground: 210 40% 98%;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
 
-  --color-primary: 217.2 91.2% 59.8%;
-  --color-primary-foreground: 222.2 47.4% 11.2%;
+  --border-color: #e5e7eb;
+  --border-hover: #d1d5db;
+}
 
-  --color-secondary: 217.2 32.6% 17.5%;
-  --color-secondary-foreground: 210 40% 98%;
+:root[data-theme="dark"] {
+  color-scheme: dark;
 
-  --color-muted: 217.2 32.6% 17.5%;
-  --color-muted-foreground: 215 20.2% 65.1%;
+  /* Canvas Colors */
+  --canvas-bg: #0f172a;
+  --node-bg: #1e293b;
 
-  --color-accent: 217.2 32.6% 17.5%;
-  --color-accent-foreground: 210 40% 98%;
+  /* UI Colors */
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --bg-tertiary: #374151;
 
-  --color-destructive: 0 62.8% 30.6%;
-  --color-destructive-foreground: 210 40% 98%;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
 
-  --color-border: 217.2 32.6% 17.5%;
-  --color-input: 217.2 32.6% 17.5%;
-  --color-ring: 224.3 76.3% 48%;
+  --border-color: #374151;
+  --border-hover: #4b5563;
+}
 
-  --radius: 0.5rem;
+/* Apply theme colors to body */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color;
+  transition-timing-function: ease-in-out;
+  transition-duration: 200ms;
 }

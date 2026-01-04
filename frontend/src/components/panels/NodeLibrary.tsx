@@ -100,6 +100,9 @@ export const NodeLibrary: React.FC = () => {
                                             onDragStart={(e) => onDragStart(e, node.id)}
                                             className="p-3 bg-secondary rounded-md cursor-move hover:bg-secondary/80 transition flex items-center gap-2"
                                             title={node.description}
+                                            style={{ cursor: 'grab' }}
+                                            onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
+                                            onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
                                         >
                                             <div
                                                 className="w-3 h-3 rounded-sm"
