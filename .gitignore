@@ -1,0 +1,163 @@
+# ================================
+# DeepBlocks Project .gitignore
+# ================================
+
+# ============ Frontend ============
+# Dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+
+# Logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Build outputs
+frontend/dist/
+frontend/build/
+
+# ============ Backend ============
+# Python
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+
+# Virtual Environment
+backend/venv/
+backend/env/
+backend/ENV/
+backend/.venv
+
+# Python specific
+backend/*.egg
+backend/*.egg-info/
+backend/dist/
+backend/build/
+backend/pip-log.txt
+backend/pip-delete-this-directory.txt
+
+# Environment variables
+backend/.env
+backend/.env.local
+
+# Database
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# Testing
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+
+# ============ Docker ============
+# Docker volumes
+docker-compose.override.yml
+*.log
+
+# PostgreSQL data
+postgres_data/
+
+# ============ General ============
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# ============ Project Specific ============
+# Don't ignore the prototype
+!prototype.html
+
+# Don't ignore documentation
+!docs/
+!README.md
+!LICENSE
+
+# Ignore generated files
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Ignore system files
+.AppleDouble
+.LSOverride
+
+# ============ Security ============
+# Never commit these
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.json
+secrets.yml
+
+# ============ Build artifacts ============
+dist/
+build/
+*.tar.gz
+*.zip
+
+# ============ Coverage reports ============
+coverage/
+.nyc_output/
+*.lcov
+
+# ============ Package manager ============
+package-lock.json.backup
+yarn.lock.backup
+pnpm-lock.yaml.backup
