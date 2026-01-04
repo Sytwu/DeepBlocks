@@ -10,6 +10,7 @@ import ReactFlow, {
     BackgroundVariant,
     NodeTypes,
     OnSelectionChangeParams,
+    useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { CustomNode } from '../nodes/CustomNode';
@@ -30,6 +31,7 @@ export const FlowCanvas: React.FC = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
+    const { project, getZoom } = useReactFlow();
 
     const setSelectedNodeId = useFlowStore((state) => state.setSelectedNodeId);
     const setStoreNodes = useFlowStore((state) => state.setNodes);
@@ -101,11 +103,23 @@ export const FlowCanvas: React.FC = () => {
             const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
             if (!reactFlowBounds) return;
 
-            // Use ReactFlow's project method for accurate position calculation
-            const position = {
-                x: event.clientX - reactFlowBounds.left,
-                y: event.clientY - reactFlowBounds.top,
-            };
+            // Get current zoom level
+            const zoom = getZoom();
+
+            // Node dimensions (approximate)
+            const nodeWidth = 160;
+            const nodeHeight = 80;
+
+            // Calculate offset in screen space (affected by zoom)
+            const offsetX = (nodeWidth / 2) * zoom;
+            const offsetY = (nodeHeight / 2) * zoom;
+
+            // Convert screen coordinates to canvas coordinates
+            // Apply offset in screen space before projection
+            const position = project({
+                x: event.clientX - reactFlowBounds.left - offsetX,
+                y: event.clientY - reactFlowBounds.top - offsetY,
+            });
 
             // Create default params from node definition
             const params: Record<string, any> = {};
@@ -129,7 +143,7 @@ export const FlowCanvas: React.FC = () => {
             // Event: Node added - save history
             setTimeout(() => saveHistory(), 0);
         },
-        [setNodes, saveHistory]
+        [setNodes, saveHistory, project, getZoom]
     );
 
     // Event: Node drag stopped - save final position

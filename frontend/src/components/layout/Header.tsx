@@ -12,12 +12,14 @@ import { useToast } from '../../contexts/ToastContext';
 
 export const Header: React.FC = () => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
-  const { currentProject, saveCurrentProject, loadProject, createProject } = useProjectStore();
+  const { currentProject, saveCurrentProject, loadProject, createProject, renameProject } = useProjectStore();
   const { clearHistory, saveHistory } = useFlowStore();
   const toast = useToast();
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showExamplesMenu, setShowExamplesMenu] = useState(false);
   const [showProjectList, setShowProjectList] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -107,6 +109,36 @@ export const Header: React.FC = () => {
       clearHistory();
       setTimeout(() => saveHistory(), 0);
       toast.success(`Loaded example "${example.name}"`);
+    }
+  };
+
+  const handleProjectNameClick = () => {
+    if (currentProject) {
+      setEditedName(currentProject.name);
+      setIsEditingName(true);
+    }
+  };
+
+  const handleProjectNameSave = () => {
+    if (currentProject && editedName.trim() && editedName !== currentProject.name) {
+      renameProject(currentProject.id, editedName.trim());
+      toast.success(`Project renamed to "${editedName.trim()}"`);
+    }
+    setIsEditingName(false);
+  };
+
+  const handleProjectNameCancel = () => {
+    setIsEditingName(false);
+    setEditedName('');
+  };
+
+  const handleProjectNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleProjectNameSave();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleProjectNameCancel();
     }
   };
 
@@ -245,10 +277,29 @@ export const Header: React.FC = () => {
           </div>
         </nav>
 
-        {/* Project Name */}
+        {/* Project Name - Inline Editable */}
         {currentProject && (
-          <div className="ml-4 text-sm text-muted-foreground">
-            {currentProject.name}
+          <div className="ml-4">
+            {isEditingName ? (
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                onBlur={handleProjectNameSave}
+                onKeyDown={handleProjectNameKeyDown}
+                autoFocus
+                className="px-2 py-1 text-sm bg-background border border-primary rounded outline-none"
+                style={{ color: 'var(--text-primary)' }}
+              />
+            ) : (
+              <div
+                onClick={handleProjectNameClick}
+                className="px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded cursor-pointer transition"
+                title="Click to rename project"
+              >
+                {currentProject.name}
+              </div>
+            )}
           </div>
         )}
 
