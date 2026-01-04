@@ -207,7 +207,27 @@ Phase 5: 待規劃                                  0%
 - ✅ 清除按鈕一鍵重置
 - ✅ 空結果友善提示
 
-### Phase 2.4: 待規劃（0%）
+### Phase 2.4: 自動儲存功能（100% ✅）
+
+**時程**: 2026-01-04  
+**Git Commit**: 即將提交
+
+#### 完成項目
+- [x] useAutoSave Hook（30 秒間隔）
+- [x] 變更檢測（hash comparison）
+- [x] ProjectStore 儲存狀態
+- [x] SaveIndicator 元件
+- [x] 整合到 FlowCanvas
+- [x] 整合到 Header 顯示
+
+#### 成果
+- ✅ 自動儲存每 30 秒執行
+- ✅ 只在有變更時儲存
+- ✅ 儲存狀態指示器
+- ✅ 不影響手動儲存（Ctrl+S）
+- ✅ 防止資料遺失
+
+### Phase 2.5: 待規劃（0%）
 
 **選項 A: 專案管理**
 - [ ] LocalStorage 儲存

@@ -8,6 +8,8 @@ interface ProjectState {
     currentProject: Project | null;
     projects: ProjectMetadata[];
     isProjectListOpen: boolean;
+    isSaving: boolean;
+    lastSaved: Date | null;
 
     // Actions
     createProject: (name: string, nodes?: Node[], edges?: Edge[]) => void;
@@ -18,12 +20,16 @@ interface ProjectState {
     refreshProjects: () => void;
     setProjectListOpen: (open: boolean) => void;
     updateCurrentProject: (nodes: Node[], edges: Edge[]) => void;
+    setIsSaving: (saving: boolean) => void;
+    setLastSaved: (date: Date) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
     currentProject: null,
     projects: storage.listProjects(),
     isProjectListOpen: false,
+    isSaving: false,
+    lastSaved: null,
 
     createProject: (name, nodes = [], edges = []) => {
         const project: Project = {
@@ -43,9 +49,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     saveCurrentProject: (nodes, edges) => {
         const { currentProject } = get();
 
+        set({ isSaving: true });
+
         if (!currentProject) {
             // Create new project if none exists
             get().createProject('Untitled Project', nodes, edges);
+            set({ isSaving: false, lastSaved: new Date() });
             return;
         }
 
@@ -57,7 +66,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         };
 
         storage.saveProject(updated);
-        set({ currentProject: updated });
+        set({ currentProject: updated, isSaving: false, lastSaved: new Date() });
         get().refreshProjects();
     },
 
@@ -115,5 +124,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 },
             });
         }
+    },
+
+    setIsSaving: (saving) => {
+        set({ isSaving: saving });
+    },
+
+    setLastSaved: (date) => {
+        set({ lastSaved: date });
     },
 }));

@@ -5,6 +5,7 @@ import { downloadProject } from '../../utils/downloadProject';
 import { useProjectStore } from '../../store/projectStore';
 import { ProjectListModal } from '../modals/ProjectListModal';
 import { examples } from '../../examples';
+import { SaveIndicator } from '../ui/SaveIndicator';
 
 export const Header: React.FC = () => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
@@ -216,7 +217,10 @@ export const Header: React.FC = () => {
           </div>
         )}
 
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex gap-4 items-center">
+          {/* Save Indicator */}
+          <SaveIndicator />
+
           <button
             onClick={handleExport}
             className="px-4 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition flex items-center gap-2"

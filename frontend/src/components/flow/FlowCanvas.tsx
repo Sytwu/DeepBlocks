@@ -15,6 +15,7 @@ import 'reactflow/dist/style.css';
 import { CustomNode } from '../nodes/CustomNode';
 import { nodeRegistry } from '../../registry/NodeRegistry';
 import { useFlowStore } from '../../store/flowStore';
+import { useAutoSave } from '../../hooks/useAutoSave';
 
 const nodeTypes: NodeTypes = {
     custom: CustomNode,
@@ -24,6 +25,7 @@ let id = 0;
 const getId = () => `node_${id++}`;
 
 export const FlowCanvas: React.FC = () => {
+    useAutoSave();
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
