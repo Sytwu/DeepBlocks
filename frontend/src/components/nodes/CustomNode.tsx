@@ -5,16 +5,24 @@ import { NodeData } from '../../types/nodes';
 export const CustomNode = memo(({ data, selected }: NodeProps<NodeData>) => {
     return (
         <div
-            className={`px-4 py-3 rounded-lg border-2 bg-white shadow-md min-w-[160px] transition-all ${selected ? 'ring-2 ring-blue-400 ring-offset-2' : ''
+            className={`px-4 py-3 rounded-lg border-2 shadow-md min-w-[160px] transition-all ${selected ? 'ring-2 ring-blue-400 ring-offset-2' : ''
                 }`}
-            style={{ borderColor: data.color }}
+            style={{
+                backgroundColor: 'var(--node-bg)',
+                borderColor: data.color,
+                color: 'var(--text-primary)',
+            }}
         >
             {/* Input Handle */}
             {data.type !== 'input' && (
                 <Handle
                     type="target"
                     position={Position.Left}
-                    className="w-3 h-3 !bg-gray-400 border-2 border-white"
+                    className="w-3 h-3 border-2"
+                    style={{
+                        backgroundColor: 'var(--border-hover)',
+                        borderColor: 'var(--node-bg)',
+                    }}
                 />
             )}
 
@@ -24,11 +32,13 @@ export const CustomNode = memo(({ data, selected }: NodeProps<NodeData>) => {
                     className="w-3 h-3 rounded-sm"
                     style={{ backgroundColor: data.color }}
                 />
-                <div className="font-semibold text-sm">{data.label}</div>
+                <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
+                    {data.label}
+                </div>
             </div>
 
             {/* Node Parameters */}
-            <div className="text-xs text-gray-600 space-y-1">
+            <div className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
                 {Object.entries(data.params).slice(0, 3).map(([key, value]) => (
                     <div key={key}>
                         <span className="font-medium">{key}:</span>{' '}
@@ -41,7 +51,11 @@ export const CustomNode = memo(({ data, selected }: NodeProps<NodeData>) => {
             <Handle
                 type="source"
                 position={Position.Right}
-                className="w-3 h-3 !bg-gray-400 border-2 border-white"
+                className="w-3 h-3 border-2"
+                style={{
+                    backgroundColor: 'var(--border-hover)',
+                    borderColor: 'var(--node-bg)',
+                }}
             />
         </div>
     );

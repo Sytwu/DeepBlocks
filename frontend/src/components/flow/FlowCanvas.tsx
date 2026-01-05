@@ -10,11 +10,14 @@ import ReactFlow, {
     BackgroundVariant,
     NodeTypes,
     OnSelectionChangeParams,
+    useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { CustomNode } from '../nodes/CustomNode';
 import { nodeRegistry } from '../../registry/NodeRegistry';
 import { useFlowStore } from '../../store/flowStore';
+import { useAutoSave } from '../../hooks/useAutoSave';
+import { useToast } from '../../contexts/ToastContext';
 
 const nodeTypes: NodeTypes = {
     custom: CustomNode,
@@ -24,21 +27,62 @@ let id = 0;
 const getId = () => `node_${id++}`;
 
 export const FlowCanvas: React.FC = () => {
+    useAutoSave();
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
+    const { project, getZoom } = useReactFlow();
 
     const setSelectedNodeId = useFlowStore((state) => state.setSelectedNodeId);
     const setStoreNodes = useFlowStore((state) => state.setNodes);
+    const setStoreEdges = useFlowStore((state) => state.setEdges);
+    const saveHistory = useFlowStore((state) => state.saveHistory);
+    const undo = useFlowStore((state) => state.undo);
+    const redo = useFlowStore((state) => state.redo);
 
-    // Sync nodes to store
+    // 修復：直接選擇值而非調用函數
+    const canUndo = useFlowStore((state) => state.historyIndex > 0);
+    const canRedo = useFlowStore((state) => state.historyIndex < state.history.length - 1);
+    const toast = useToast();
+
+
+    // Sync nodes and edges to store (NO automatic history save)
     useEffect(() => {
         setStoreNodes(nodes);
-    }, [nodes, setStoreNodes]);
+        setStoreEdges(edges);
+    }, [nodes, edges, setStoreNodes, setStoreEdges]);
 
+    // Undo/Redo handlers with state sync
+    const handleUndo = useCallback(() => {
+        if (canUndo) {
+            undo();
+            // 關鍵修復：同步 store 狀態到 ReactFlow
+            const state = useFlowStore.getState();
+            setNodes(state.nodes);
+            setEdges(state.edges);
+            toast.success('Undo');
+        }
+    }, [canUndo, undo, setNodes, setEdges, toast]);
+
+    const handleRedo = useCallback(() => {
+        if (canRedo) {
+            redo();
+            // 關鍵修復：同步 store 狀態到 ReactFlow
+            const state = useFlowStore.getState();
+            setNodes(state.nodes);
+            setEdges(state.edges);
+            toast.success('Redo');
+        }
+    }, [canRedo, redo, setNodes, setEdges, toast]);
+
+    // Event: Connection created - save history after edge added
     const onConnect = useCallback(
-        (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges]
+        (params: Connection) => {
+            setEdges((eds) => addEdge(params, eds));
+            // Use setTimeout to ensure state update completes
+            setTimeout(() => saveHistory(), 0);
+        },
+        [setEdges, saveHistory]
     );
 
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -57,10 +101,25 @@ export const FlowCanvas: React.FC = () => {
             if (!nodeDef) return;
 
             const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-            const position = {
-                x: event.clientX - (reactFlowBounds?.left || 0) - 80,
-                y: event.clientY - (reactFlowBounds?.top || 0) - 40,
-            };
+            if (!reactFlowBounds) return;
+
+            // Get current zoom level
+            const zoom = getZoom();
+
+            // Node dimensions (approximate)
+            const nodeWidth = 160;
+            const nodeHeight = 80;
+
+            // Calculate offset in screen space (affected by zoom)
+            const offsetX = (nodeWidth / 2) * zoom;
+            const offsetY = (nodeHeight / 2) * zoom;
+
+            // Convert screen coordinates to canvas coordinates
+            // Apply offset in screen space before projection
+            const position = project({
+                x: event.clientX - reactFlowBounds.left - offsetX,
+                y: event.clientY - reactFlowBounds.top - offsetY,
+            });
 
             // Create default params from node definition
             const params: Record<string, any> = {};
@@ -81,9 +140,87 @@ export const FlowCanvas: React.FC = () => {
             };
 
             setNodes((nds) => nds.concat(newNode));
+            // Event: Node added - save history
+            setTimeout(() => saveHistory(), 0);
         },
-        [setNodes]
+        [setNodes, saveHistory, project, getZoom]
     );
+
+    // Event: Node drag stopped - save final position
+    const onNodeDragStop = useCallback(() => {
+        setTimeout(() => saveHistory(), 0);
+    }, [saveHistory]);
+
+    // Event: Nodes deleted (via ReactFlow)
+    const onNodesDelete = useCallback(() => {
+        setTimeout(() => saveHistory(), 0);
+    }, [saveHistory]);
+
+    // Event: Edges deleted
+    const onEdgesDelete = useCallback(() => {
+        setTimeout(() => saveHistory(), 0);
+    }, [saveHistory]);
+
+    // Duplicate selected nodes (Ctrl+D)
+    const handleDuplicate = useCallback(() => {
+        const selectedNodes = nodes.filter(n => n.selected);
+        if (selectedNodes.length === 0) {
+            toast.warning('No nodes selected');
+            return;
+        }
+
+        // Create ID mapping for edges
+        const idMap = new Map<string, string>();
+        const duplicatedNodes = selectedNodes.map(node => {
+            const newId = getId();
+            idMap.set(node.id, newId);
+            return {
+                ...node,
+                id: newId,
+                position: {
+                    x: node.position.x + 50,
+                    y: node.position.y + 50,
+                },
+                selected: true,
+            };
+        });
+
+        // Duplicate internal edges (only between selected nodes)
+        const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+        const duplicatedEdges = edges
+            .filter(edge =>
+                selectedNodeIds.has(edge.source) &&
+                selectedNodeIds.has(edge.target)
+            )
+            .map(edge => ({
+                ...edge,
+                id: `${idMap.get(edge.source)}-${idMap.get(edge.target)}`,
+                source: idMap.get(edge.source)!,
+                target: idMap.get(edge.target)!,
+            }));
+
+        // Deselect original nodes
+        const updatedNodes = nodes.map(n => ({ ...n, selected: false }));
+
+        // Update state
+        setNodes([...updatedNodes, ...duplicatedNodes]);
+        setEdges([...edges, ...duplicatedEdges]);
+
+        // Single history snapshot for batch operation
+        setTimeout(() => saveHistory(), 0);
+
+        toast.success(`Duplicated ${selectedNodes.length} node(s)`);
+    }, [nodes, edges, setNodes, setEdges, saveHistory, toast]);
+
+    // Select all nodes (Ctrl+A)
+    const handleSelectAll = useCallback(() => {
+        if (nodes.length === 0) {
+            toast.warning('No nodes to select');
+            return;
+        }
+        setNodes(nodes.map(n => ({ ...n, selected: true })));
+        toast.success('Selected all nodes');
+    }, [nodes, setNodes, toast]);
 
     const onSelectionChange = useCallback(
         ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
@@ -99,8 +236,24 @@ export const FlowCanvas: React.FC = () => {
     // Handle keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            // Delete selected nodes
-            if (event.key === 'Delete' || event.key === 'Backspace') {
+            // Prevent if typing in input
+            const target = event.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Ctrl+Z: Undo
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+                event.preventDefault();
+                handleUndo();
+            }
+            // Ctrl+Y or Ctrl+Shift+Z: Redo
+            else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+                event.preventDefault();
+                handleRedo();
+            }
+            // Delete selected nodes (manual keyboard delete)
+            else if (event.key === 'Delete' || event.key === 'Backspace') {
                 setNodes((nds) => nds.filter((node) => !node.selected));
                 setEdges((eds) => eds.filter((edge) => {
                     const sourceNode = nodes.find((n) => n.id === edge.source);
@@ -108,12 +261,24 @@ export const FlowCanvas: React.FC = () => {
                     return sourceNode && !sourceNode.selected && targetNode && !targetNode.selected;
                 }));
                 setSelectedNodeId(null);
+                // Event: Manual delete - save history
+                setTimeout(() => saveHistory(), 0);
+            }
+            // Ctrl+D: Duplicate selected nodes
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+                event.preventDefault();
+                handleDuplicate();
+            }
+            // Ctrl+A: Select all nodes
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+                event.preventDefault();
+                handleSelectAll();
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [setNodes, setEdges, nodes, setSelectedNodeId]);
+    }, [setNodes, setEdges, nodes, setSelectedNodeId, handleUndo, handleRedo, saveHistory, handleDuplicate, handleSelectAll]);
 
     return (
         <div className="flex-1 relative bg-background" ref={reactFlowWrapper}>
@@ -126,14 +291,19 @@ export const FlowCanvas: React.FC = () => {
                 onDrop={onDrop}
                 onDragOver={onDragOver}
                 onSelectionChange={onSelectionChange}
+                onNodeDragStop={onNodeDragStop}
+                onNodesDelete={onNodesDelete}
+                onEdgesDelete={onEdgesDelete}
                 nodeTypes={nodeTypes}
                 fitView
                 className="bg-background"
             >
-                <Background variant={BackgroundVariant.Dots} gap={16} size={1} className="bg-background" />
-                <Controls className="bg-card border border-border text-foreground" />
+                <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="var(--border-color)" />
+                <Controls />
                 <MiniMap
-                    className="bg-card border border-border"
+                    style={{
+                        backgroundColor: 'var(--bg-secondary)',
+                    }}
                     nodeColor={(node) => node.data.color || '#3b82f6'}
                     maskColor="rgba(0, 0, 0, 0.1)"
                 />

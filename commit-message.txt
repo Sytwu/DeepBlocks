@@ -1,0 +1,48 @@
+feat(Phase 2.8): Advanced node expansion + collapsible categories
+
+## Phase 2.8: Advanced Node Library Expansion (21 → 41 nodes)
+
+### New Nodes (20 total)
+- **Transformer Components (5)**: MultiHeadAttention, TransformerEncoder, 
+  TransformerDecoder, PositionalEncoding, LayerNorm
+- **Loss Functions (5)**: CrossEntropyLoss, MSELoss, BCELoss, L1Loss, SmoothL1Loss
+- **Optimizers (5)**: Adam, SGD, AdamW, RMSprop, LRScheduler
+- **Advanced Blocks (5)**: UNetBlock, InceptionModule, DenseNetBlock, 
+  MobileNetBlock, AttentionBlock
+
+### UI Improvements: Collapsible Node Categories
+- ✅ Collapsible/expandable category sections
+- ✅ Smooth CSS Grid animation (300ms ease-in-out)
+- ✅ Chevron icon rotation indicator
+- ✅ Node count badges per category
+- ✅ Better visual hierarchy (ml-6 indentation)
+- ✅ All categories expanded by default
+
+### Bug Fixes
+- 🐛 Fixed: Global CSS transition override blocking animations
+  - Removed `transition-property` from `* {}` selector in index.css
+  - Allows custom transitions (grid-template-rows) to work properly
+- 🐛 Fixed: Select dropdown light theme in dark mode
+  - Added `:root[data-theme="dark"] select` styles to index.css
+  - Forces dark background (#1e293b) on dropdown menus
+
+### Files Changed (7 files, +715/-111 lines)
+- `frontend/src/registry/nodes/index.ts`: +466 lines (node definitions)
+- `frontend/src/registry/NodeRegistry.ts`: +48 lines (registrations)
+- `frontend/src/components/panels/NodeLibrary.tsx`: Collapsible UI
+- `frontend/src/components/panels/PropertyPanel.tsx`: Select theme fix
+- `frontend/src/index.css`: Animation and select fixes
+- `README.md`: Updated features and progress
+- `docs/PROGRESS.md`: Phase 2 → 100% complete
+
+### Statistics
+- **Total Nodes**: 41 (was 21)
+- **Categories**: 8 (Data, CNN, Activation, Operations, Transformer, Loss, Optimizer, Blocks)
+- **Phase 2 Progress**: 100% ✅
+- **Overall Progress**: 50% (2.8/5.5 phases)
+
+### Testing
+- ✅ All nodes appear in library
+- ✅ Collapse/expand animation smooth
+- ✅ Select dropdown dark theme working
+- ✅ Server compiles successfully

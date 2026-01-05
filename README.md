@@ -12,12 +12,30 @@
 
 ## ✨ Features
 
+### Core Capabilities
 - 🎨 **Drag-and-Drop Design** - Scratch-like visual interface, intuitive and easy to use
 - ⚡ **Real-time Code Generation** - Automatically generates complete, executable PyTorch code
+- 🔄 **Smart Undo/Redo** - Event-driven history tracking with intelligent state management
+- 📋 **Node Duplication** - Ctrl+D to duplicate nodes with preserved connections
 - 📚 **Education-Friendly** - Helps beginners understand deep learning architectures
 - 🔬 **Research Tool** - Rapid prototyping for faster experimentation
-- 🏆 **Paper-Quality Visualization** - Top-tier conference-level architecture diagrams
-- 🌐 **PWA Support** - Works offline
+
+### Node Library (41+ Nodes)
+- **Data Processing (3)**: Input, DataLoader, Output
+- **CNN Layers (9)**: Conv2d, Conv3d, Linear, BatchNorm2d, MaxPool2d, AvgPool2d, Dropout, Flatten, +more
+- **Activations (5)**: ReLU, LeakyReLU, Sigmoid, Softmax, Tanh
+- **Operations (3)**: Concat, Add, Reshape
+- **Transformer (5)**: Multi-Head Attention, Encoder, Decoder, Positional Encoding, LayerNorm
+- **Loss Functions (5)**: CrossEntropy, MSE, BCE, L1, SmoothL1
+- **Optimizers (5)**: Adam, SGD, AdamW, RMSprop, LR Scheduler
+- **Advanced Blocks (6)**: ResNet Block, U-Net Block, Inception, DenseNet, MobileNet, Attention
+
+### Project Management
+- 💾 **Auto-Save** - Automatic project saving every 30 seconds
+- 📂 **Project Storage** - LocalStorage-based project management
+- 🎨 **Dark/Light Theme** - Customizable UI themes
+- 🔍 **Node Search** - Quick node library filtering
+- 📋 **Example Projects** - MNIST Classifier, Simple CNN presets
 
 ---
 
@@ -72,16 +90,25 @@ docker-compose up -d
 
 ## 🎯 Project Status
 
-**Current Version**: v0.1.0-dev (Phase 0: Environment Setup)  
-**Expected Release**: v1.0.0 @ Mid-March 2026
+**Current Version**: v0.2.0-alpha (Phase 2: Advanced Features Complete)  
+**Next Release**: v1.0.0 @ Q2 2026
 
 ### Development Progress
-- [x] Phase 0: Project Planning & Prototype Design
-- [ ] Phase 1: MVP Basic Canvas (Week 2-3)
-- [ ] Phase 2: Node System (Week 4-5)
-- [ ] Phase 3: Code Generation (Week 6-7)
-- [ ] Phase 4: Backend Services (Week 7-8)
-- [ ] Phase 5: Optimization & Deployment (Week 9-10)
+- [x] **Phase 0**: Project Planning & Environment Setup ✅
+- [x] **Phase 1**: MVP Visual Editor - Complete IDE with 20 nodes ✅
+- [x] **Phase 2**: Project Management & Optimization (85% Complete) ✅
+  - [x] 2.1: Project Management System (LocalStorage, CRUD) ✅
+  - [x] 2.2: Example Projects (MNIST, Simple CNN) ✅
+  - [x] 2.3: Node Search & Filtering ✅
+  - [x] 2.4: Auto-Save Functionality ✅
+  - [x] 2.5: Theme System & Toast Notifications ✅
+  - [x] 2.6: Undo/Redo System (Event-driven) ✅
+  - [x] 2.7: Node Duplication & Batch Operations ✅
+  - [x] 2.8: Advanced Node Library (41 nodes) ✅
+- [ ] **Phase 3**: Code Validation & Execution (Planned)
+- [ ] **Phase 4**: Collaboration & Deployment (Planned)
+
+**Latest Updates**: See [PROGRESS.md](docs/PROGRESS.md) for detailed progress tracking
 
 ---
 
@@ -133,22 +160,32 @@ DeepBlocks/
 
 ## 🗺️ Roadmap
 
-### v0.1.0 (2026-02-09) - MVP Alpha
-- Basic canvas with node dragging
-- 20+ node definitions
+### v0.1.0 (2026-01-04) - MVP Complete ✅
+- ✅ Three-column IDE layout
+- ✅ 20 nodes with drag-and-drop
+- ✅ Real-time property editing
+- ✅ PyTorch code generation
+- ✅ ZIP export functionality
 
-### v0.2.0 (2026-02-23) - Code Generation
-- PyTorch code generation
-- ZIP download functionality
+### v0.2.0 (2026-01-05) - Advanced Features ✅
+- ✅ Project management (LocalStorage)
+- ✅ Auto-save every 30 seconds
+- ✅ Undo/Redo system (event-driven)
+- ✅ Node duplication (Ctrl+D)
+- ✅ 41 nodes including Transformer, Loss, Optimizers
+- ✅ Dark/Light theme
+- ✅ Example projects
 
-### v0.3.0 (2026-03-09) - Backend Integration
+### v0.3.0 (Q2 2026) - Code Validation
+- Model validation & error checking
+- Parameter statistics
+- Local Python execution
+
+### v1.0.0 (Q2 2026) - Official Release
+- Backend integration (FastAPI)
 - User authentication
 - Cloud project storage
-
-### v1.0.0 (2026-03-16) - Official Release
-- Full features
 - PWA support
-- 3+ preset examples
 
 ---
 
