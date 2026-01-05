@@ -3,6 +3,10 @@ import { nodeRegistry } from '../../registry/NodeRegistry';
 
 export const NodeLibrary: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+        new Set(nodeRegistry.getCategories()) // All categories expanded by default
+    );
+
     const categories = nodeRegistry.getCategories();
     const allNodes = nodeRegistry.getAllNodes();
 
@@ -21,6 +25,18 @@ export const NodeLibrary: React.FC = () => {
     const onDragStart = (event: React.DragEvent, nodeId: string) => {
         event.dataTransfer.setData('application/reactflow', nodeId);
         event.dataTransfer.effectAllowed = 'move';
+    };
+
+    const toggleCategory = (category: string) => {
+        setExpandedCategories(prev => {
+            const next = new Set(prev);
+            if (next.has(category)) {
+                next.delete(category);
+            } else {
+                next.add(category);
+            }
+            return next;
+        });
     };
 
     return (
@@ -87,30 +103,62 @@ export const NodeLibrary: React.FC = () => {
 
                         if (nodesInCategory.length === 0) return null;
 
+                        const isExpanded = expandedCategories.has(category);
+
                         return (
-                            <div key={category} className="mb-6">
-                                <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">
-                                    {category}
-                                </h3>
-                                <div className="space-y-2">
-                                    {nodesInCategory.map((node) => (
-                                        <div
-                                            key={node.id}
-                                            draggable
-                                            onDragStart={(e) => onDragStart(e, node.id)}
-                                            className="p-3 bg-secondary rounded-md cursor-move hover:bg-secondary/80 transition flex items-center gap-2"
-                                            title={node.description}
-                                            style={{ cursor: 'grab' }}
-                                            onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
-                                            onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
+                            <div key={category} className="mb-2">
+                                {/* Collapsible Category Header - Fully Clickable */}
+                                <button
+                                    onClick={() => toggleCategory(category)}
+                                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-accent/50 rounded-md transition-colors text-left cursor-pointer group"
+                                    title={isExpanded ? `Collapse ${category}` : `Expand ${category}`}
+                                >
+                                    <h3 className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-2">
+                                        {/* Chevron Icon with smooth rotation */}
+                                        <svg
+                                            className={`w-3.5 h-3.5 transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                         >
-                                            <div
-                                                className="w-3 h-3 rounded-sm"
-                                                style={{ backgroundColor: node.color }}
-                                            />
-                                            <span className="text-sm text-foreground">{node.label}</span>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                        <span className="group-hover:text-foreground transition-colors">{category}</span>
+                                    </h3>
+                                    <span className="text-xs text-muted-foreground/60 font-medium">
+                                        ({nodesInCategory.length})
+                                    </span>
+                                </button>
+
+                                {/* Collapsible Content with CSS Grid animation */}
+                                <div
+                                    className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+                                    style={{
+                                        gridTemplateRows: isExpanded ? '1fr' : '0fr',
+                                    }}
+                                >
+                                    <div className="overflow-hidden">
+                                        <div className="space-y-1.5 mt-1 ml-6 pr-1">
+                                            {nodesInCategory.map((node) => (
+                                                <div
+                                                    key={node.id}
+                                                    draggable
+                                                    onDragStart={(e) => onDragStart(e, node.id)}
+                                                    className="p-2.5 bg-secondary rounded-md cursor-move hover:bg-secondary/80 transition-colors flex items-center gap-2.5 shadow-sm"
+                                                    title={node.description}
+                                                    style={{ cursor: 'grab' }}
+                                                    onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
+                                                    onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
+                                                >
+                                                    <div
+                                                        className="w-3 h-3 rounded-sm flex-shrink-0"
+                                                        style={{ backgroundColor: node.color }}
+                                                    />
+                                                    <span className="text-sm text-foreground font-medium">{node.label}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
                             </div>
                         );

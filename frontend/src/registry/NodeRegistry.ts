@@ -20,6 +20,26 @@ import {
     AddNode,
     ReshapeNode,
     ResNetBlockNode,
+    MultiHeadAttentionNode,
+    TransformerEncoderNode,
+    TransformerDecoderNode,
+    PositionalEncodingNode,
+    LayerNormNode,
+    CrossEntropyLossNode,
+    MSELossNode,
+    BCELossNode,
+    L1LossNode,
+    SmoothL1LossNode,
+    AdamNode,
+    SGDNode,
+    AdamWNode,
+    RMSpropNode,
+    LRSchedulerNode,
+    UNetBlockNode,
+    InceptionModuleNode,
+    DenseNetBlockNode,
+    MobileNetBlockNode,
+    AttentionBlockNode,
 } from './nodes';
 
 class NodeRegistry {
@@ -55,6 +75,34 @@ class NodeRegistry {
 
         // Blocks
         this.registerNode(ResNetBlockNode);
+
+        // Transformer
+        this.registerNode(MultiHeadAttentionNode);
+        this.registerNode(TransformerEncoderNode);
+        this.registerNode(TransformerDecoderNode);
+        this.registerNode(PositionalEncodingNode);
+        this.registerNode(LayerNormNode);
+
+        // Loss Functions
+        this.registerNode(CrossEntropyLossNode);
+        this.registerNode(MSELossNode);
+        this.registerNode(BCELossNode);
+        this.registerNode(L1LossNode);
+        this.registerNode(SmoothL1LossNode);
+
+        // Optimizers
+        this.registerNode(AdamNode);
+        this.registerNode(SGDNode);
+        this.registerNode(AdamWNode);
+        this.registerNode(RMSpropNode);
+        this.registerNode(LRSchedulerNode);
+
+        // Advanced Blocks
+        this.registerNode(UNetBlockNode);
+        this.registerNode(InceptionModuleNode);
+        this.registerNode(DenseNetBlockNode);
+        this.registerNode(MobileNetBlockNode);
+        this.registerNode(AttentionBlockNode);
     }
 
     registerNode(node: NodeDefinition) {

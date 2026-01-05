@@ -49,9 +49,20 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Smooth transitions */
+/* Base transition settings - allow components to define their own properties */
 * {
-  transition-property: background-color, border-color, color;
   transition-timing-function: ease-in-out;
   transition-duration: 200ms;
+}
+
+/* Force dark theme on select dropdowns */
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] select option {
+  background-color: #1e293b;
+  color: #f9fafb;
+}
+
+:root[data-theme="dark"] select option:hover,
+:root[data-theme="dark"] select option:checked {
+  background-color: #334155;
 }

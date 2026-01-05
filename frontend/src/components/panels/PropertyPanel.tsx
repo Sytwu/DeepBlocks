@@ -76,10 +76,13 @@ export const PropertyPanel: React.FC = () => {
                     <select
                         value={currentValue ?? param.default}
                         onChange={(e) => handleParamChange(param.name, e.target.value, 'select')}
-                        className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm"
+                        className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+                        style={{
+                            colorScheme: 'dark'
+                        }}
                     >
                         {param.options?.map((option) => (
-                            <option key={option} value={option}>
+                            <option key={option} value={option} className="bg-background text-foreground">
                                 {option}
                             </option>
                         ))}
