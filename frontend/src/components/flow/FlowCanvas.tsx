@@ -161,6 +161,67 @@ export const FlowCanvas: React.FC = () => {
         setTimeout(() => saveHistory(), 0);
     }, [saveHistory]);
 
+    // Duplicate selected nodes (Ctrl+D)
+    const handleDuplicate = useCallback(() => {
+        const selectedNodes = nodes.filter(n => n.selected);
+        if (selectedNodes.length === 0) {
+            toast.warning('No nodes selected');
+            return;
+        }
+
+        // Create ID mapping for edges
+        const idMap = new Map<string, string>();
+        const duplicatedNodes = selectedNodes.map(node => {
+            const newId = getId();
+            idMap.set(node.id, newId);
+            return {
+                ...node,
+                id: newId,
+                position: {
+                    x: node.position.x + 50,
+                    y: node.position.y + 50,
+                },
+                selected: true,
+            };
+        });
+
+        // Duplicate internal edges (only between selected nodes)
+        const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+        const duplicatedEdges = edges
+            .filter(edge =>
+                selectedNodeIds.has(edge.source) &&
+                selectedNodeIds.has(edge.target)
+            )
+            .map(edge => ({
+                ...edge,
+                id: `${idMap.get(edge.source)}-${idMap.get(edge.target)}`,
+                source: idMap.get(edge.source)!,
+                target: idMap.get(edge.target)!,
+            }));
+
+        // Deselect original nodes
+        const updatedNodes = nodes.map(n => ({ ...n, selected: false }));
+
+        // Update state
+        setNodes([...updatedNodes, ...duplicatedNodes]);
+        setEdges([...edges, ...duplicatedEdges]);
+
+        // Single history snapshot for batch operation
+        setTimeout(() => saveHistory(), 0);
+
+        toast.success(`Duplicated ${selectedNodes.length} node(s)`);
+    }, [nodes, edges, setNodes, setEdges, saveHistory, toast]);
+
+    // Select all nodes (Ctrl+A)
+    const handleSelectAll = useCallback(() => {
+        if (nodes.length === 0) {
+            toast.warning('No nodes to select');
+            return;
+        }
+        setNodes(nodes.map(n => ({ ...n, selected: true })));
+        toast.success('Selected all nodes');
+    }, [nodes, setNodes, toast]);
+
     const onSelectionChange = useCallback(
         ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
             if (selectedNodes.length === 1) {
@@ -203,11 +264,21 @@ export const FlowCanvas: React.FC = () => {
                 // Event: Manual delete - save history
                 setTimeout(() => saveHistory(), 0);
             }
+            // Ctrl+D: Duplicate selected nodes
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+                event.preventDefault();
+                handleDuplicate();
+            }
+            // Ctrl+A: Select all nodes
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+                event.preventDefault();
+                handleSelectAll();
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [setNodes, setEdges, nodes, setSelectedNodeId, handleUndo, handleRedo, saveHistory]);
+    }, [setNodes, setEdges, nodes, setSelectedNodeId, handleUndo, handleRedo, saveHistory, handleDuplicate, handleSelectAll]);
 
     return (
         <div className="flex-1 relative bg-background" ref={reactFlowWrapper}>
